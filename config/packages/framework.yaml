@@ -1,0 +1,16 @@
+framework:
+    secret: '%env(APP_SECRET)%'
+    csrf_protection: false
+
+    session:
+        handler_id: null
+        cookie_secure: auto
+        cookie_samesite: lax
+
+    php_errors:
+        log: true
+    
+    http_client:
+        default_options:
+            verify_peer: false
+            verify_host: false
