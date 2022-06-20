@@ -7,6 +7,7 @@ namespace App\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -15,27 +16,23 @@ use Symfony\Component\Routing\Annotation\Route;
 class HomeController extends AbstractController
 {
     /**
-     * @Route("/home", name="home")
+     * @Route("/", name="home")
      * 
-     * @return JsonResponse
+     * @return Response
      */
-    public function home(): JsonResponse
+    public function home(): Response
     {
-        return new JsonResponse([
-            'Bienvenue sur la page d\'accueil!'
-        ]);
+        return new Response(
+            '<html><body>Bienvenue sur la page d\'accueil !</body></html>'
+        );
     }
 
     /**
      * @Route("/login", name="login", methods={"POST"})
      * 
-     * @return JsonResponse
      */
-    public function login(): JsonResponse
+    public function login()
     {
-        return new JsonResponse([
-            'Connexion réussie!'
-        ]);
     }
 
     /**
@@ -55,7 +52,7 @@ class HomeController extends AbstractController
     public function admin(): JsonResponse
     {
         return new JsonResponse([
-            'Access authorized.'
+            'result' => 'Access authorized.'
         ]);
     }
 }

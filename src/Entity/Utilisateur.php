@@ -43,6 +43,8 @@ class Utilisateur implements UserInterface
      * @var array $roles
      * 
      * @ORM\Column(type="json")
+     * 
+     * @Groups("utilisateur")
      */
     private array $roles = [];
 

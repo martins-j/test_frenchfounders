@@ -10,13 +10,13 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * Class UtilisateurController.
- * 
- * @Route("/utilisateur")
  */
 class UtilisateurController extends AbstractController
 {
@@ -61,13 +61,14 @@ class UtilisateurController extends AbstractController
     /**
      * @Route("/create", name="create", methods={"POST"})
      * 
-     * @param Request $request
+     * @param Request         $request
+     * @param MailerInterface $mailer
      * 
      * @return JsonResponse
      */
-    public function create(Request $request): JsonResponse
+    public function create(Request $request, MailerInterface $mailer): JsonResponse
     {
-        $parameters = $this->preapreParameters($request);
+        $parameters = $this->prepareParameters($request);
 
         if(!$this->errors($parameters)) {
             $utilisateur = new Utilisateur();
@@ -77,26 +78,34 @@ class UtilisateurController extends AbstractController
                 ->setPrenom($parameters['prenom'])
                 ->setSociete($parameters['societe'])
                 ->setEmail($parameters['email'])
-                ->setPassword($$this->passwordEncoder->encodePassword($utilisateur, $parameters['password']))
+                ->setPassword($this->passwordEncoder->encodePassword($utilisateur, $parameters['password']))
             ;
 
             if($this->validator->validate($utilisateur)) {
                 //$this->entityManager->persist($utilisateur);
                 //$this->entityManager->flush();
 
-                $this->mailer->sendEmail([
+                $this->mailer->sendEmail($mailer, [
                     'nom'    => $utilisateur->getNom(),
                     'prenom' => $utilisateur->getPrenom(),
-                    'email'  => $utilisateur->getEmail()
+                    'mail'   => $utilisateur->getEmail()
                 ]);
 
-                return new JsonResponse([
-                    'result' => $utilisateur
-                ]);
+                return $this->json([
+                    'Utilisateur créé' => $utilisateur
+                ],
+                200,
+                [],
+                [
+                    'groups' => [
+                        'utilisateur'
+                    ]
+                ])
+                ;
             }
     
             return new JsonResponse([
-                    'erreurs' => $this->validator->getErrors()
+                    'Erreurs' => $this->validator->getErrors()
                 ],
                400
             );
@@ -108,15 +117,15 @@ class UtilisateurController extends AbstractController
      * 
      * @return array
      */
-    private function preapreParameters(Request $request): array
+    private function prepareParameters(Request $request): array
     {
         return [
-            'nom'                  => $request->request->get('nom'),
-            'prenom'               => $request->request->get('prenom'),
-            'societe'              => $request->request->get('societe'),
-            'email'                => $request->request->get('email'),
-            'password'             => $request->request->get('password'),
-            'passwordConfirmation' => $request->request->get('password_confirmation')
+            'nom'                   => $request->request->get('nom'),
+            'prenom'                => $request->request->get('prenom'),
+            'societe'               => $request->request->get('societe'),
+            'email'                 => $request->request->get('email'),
+            'password'              => $request->request->get('password'),
+            'password_confirmation' => $request->request->get('password_confirmation')
         ];
     }
 
@@ -129,7 +138,7 @@ class UtilisateurController extends AbstractController
     {
         $errors = [];
         
-        if ($parameters['password'] !== $parameters['passwordConfirmation']) {
+        if ($parameters['password'] !== $parameters['password_confirmation']) {
             $errors[] = "Les mots de passe ne sont pas identiques.";
         }
 

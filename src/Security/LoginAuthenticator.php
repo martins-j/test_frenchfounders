@@ -19,7 +19,7 @@ use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 class LoginAuthenticator extends AbstractGuardAuthenticator
 {
     /** @var UserPasswordEncoderInterface $passwordEncoder */
-    private $passwordEncoder;
+    private UserPasswordEncoderInterface $passwordEncoder;
 
     /**
      * LoginAuthenticator construct.
@@ -121,7 +121,7 @@ class LoginAuthenticator extends AbstractGuardAuthenticator
     {
         return new JsonResponse(
             [
-                'result' => 'Successfully logged in!'
+                'Connexion réussie!'
             ]
         );
     }
