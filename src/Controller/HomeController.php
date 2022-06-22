@@ -51,8 +51,9 @@ class HomeController extends AbstractController
     */
     public function admin(): JsonResponse
     {
-        return new JsonResponse([
-            'result' => 'Access authorized.'
-        ]);
+        return $this->json([
+                'result' => 'Access authorized.'
+            ]
+        );
     }
 }

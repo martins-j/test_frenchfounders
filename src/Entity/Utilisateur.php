@@ -32,8 +32,8 @@ class Utilisateur implements UserInterface
      * 
      * @ORM\Column(type="string", length=180, unique=true)
      * 
-     * @Assert\Email(message="{{ value }} ne semble pas être une adresse e-mail valide.")
      * @Assert\NotBlank(message="L'adresse e-mail ne peut pas être vide.")
+     * @Assert\Email(message="{{ value }} ne semble pas être une adresse e-mail valide.")
      * 
      * @Groups("utilisateur")
      */
@@ -48,14 +48,13 @@ class Utilisateur implements UserInterface
      */
     private array $roles = [];
 
-    /**
-     * The hashed password
-     * 
+    /** 
      * @var string $password
      * 
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="string", length=255)
      * 
      * @Assert\NotBlank(message="Le mot de passe ne peut pas être vide.")
+     * @Assert\Length(min=6, minMessage="Le mot de passe doit comporter au moins {{ limit }} caractères.")
      */
     private string $password;
 
@@ -139,7 +138,7 @@ class Utilisateur implements UserInterface
     /**
      * @see UserInterface
      */
-    public function getPassword(): string
+    public function getPassword(): ?string
     {
         return $this->password;
     }

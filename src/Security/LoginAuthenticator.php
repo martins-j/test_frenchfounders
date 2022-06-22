@@ -136,9 +136,8 @@ class LoginAuthenticator extends AbstractGuardAuthenticator
      */
     public function start(Request $request, AuthenticationException $authException = null): JsonResponse
     {
-        return new JsonResponse(
-            [
-                'error' => 'Access Denied!'
+        return new JsonResponse([
+                'result' => 'Access Denied!'
             ]
         );
     }

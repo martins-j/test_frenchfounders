@@ -70,46 +70,54 @@ class UtilisateurController extends AbstractController
     {
         $parameters = $this->prepareParameters($request);
 
-        if(!$this->errors($parameters)) {
-            $utilisateur = new Utilisateur();
-
-            $utilisateur
-                ->setNom($parameters['nom'])
-                ->setPrenom($parameters['prenom'])
-                ->setSociete($parameters['societe'])
-                ->setEmail($parameters['email'])
-                ->setPassword($this->passwordEncoder->encodePassword($utilisateur, $parameters['password']))
-            ;
-
-            if($this->validator->validate($utilisateur)) {
-                //$this->entityManager->persist($utilisateur);
-                //$this->entityManager->flush();
-
-                $this->mailer->sendEmail($mailer, [
-                    'nom'    => $utilisateur->getNom(),
-                    'prenom' => $utilisateur->getPrenom(),
-                    'mail'   => $utilisateur->getEmail()
-                ]);
-
-                return $this->json([
-                    'Utilisateur créé' => $utilisateur
-                ],
-                200,
-                [],
-                [
-                    'groups' => [
-                        'utilisateur'
-                    ]
-                ])
-                ;
-            }
-    
+        if($this->errors($parameters)) {
             return new JsonResponse([
-                    'Erreurs' => $this->validator->getErrors()
+                    'Erreurs' => $this->errors($parameters)
                 ],
-               400
+                400
             );
         }
+
+        $utilisateur = new Utilisateur();
+        $utilisateur
+            ->setNom($parameters['nom'])
+            ->setPrenom($parameters['prenom'])
+            ->setSociete($parameters['societe'])
+            ->setEmail($parameters['email'])
+            ->setPassword($parameters['password'])
+        ;
+
+        $passwordEncoded = $this->passwordEncoder->encodePassword($utilisateur, $utilisateur->getPassword());
+        $utilisateur->setPassword($passwordEncoded);
+
+        if($this->validator->validate($utilisateur)) {
+            //$this->entityManager->persist($utilisateur);
+            //$this->entityManager->flush();
+
+            $this->mailer->sendEmail($mailer, [
+                'nom'    => $utilisateur->getNom(),
+                'prenom' => $utilisateur->getPrenom(),
+                'mail'   => $utilisateur->getEmail()
+            ]);
+
+            return $this->json([
+                'Utilisateur créé' => $utilisateur
+            ],
+            200,
+            [],
+            [
+                'groups' => [
+                    'utilisateur'
+                ]
+            ])
+            ;
+        }
+
+        return new JsonResponse([
+                'Erreurs' => $this->validator->getErrors()
+            ],
+            400
+        );
     }
 
     /**
@@ -137,13 +145,17 @@ class UtilisateurController extends AbstractController
     private function errors(array $parameters): array
     {
         $errors = [];
-        
-        if ($parameters['password'] !== $parameters['password_confirmation']) {
-            $errors[] = "Les mots de passe ne sont pas identiques.";
+
+        if (!$parameters['password']) {
+            $errors[] = "Le mot de passe ne peut pas être vide.";
         }
 
         if (6 > strlen($parameters['password'])) {
             $errors[] = "Le mot de passe doit comporter au moins 6 caractères.";
+        }
+        
+        if ($parameters['password'] !== $parameters['password_confirmation']) {
+            $errors[] = "Les mots de passe ne sont pas identiques.";
         }
 
         return $errors;
