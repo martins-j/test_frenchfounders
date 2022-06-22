@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
 use App\Entity\Utilisateur;
@@ -40,10 +42,8 @@ class AppFixtures extends Fixture
                 ->setPrenom('Prenom'.$i)
                 ->setSociete('Societe'.$i)
                 ->setEmail($i.'@foo.bar')
-                ->setPassword('password'.$i);
+                ->setPassword($this->passwordEncoder->encodePassword($utilisateur, 'password'.$i))
             ;
-
-            $utilisateur->setPassword($this->passwordEncoder->encodePassword($utilisateur, 'password'.$i));
 
             $manager->persist($utilisateur);
         }

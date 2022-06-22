@@ -33,25 +33,87 @@ class UtilisateurControllerTest extends WebTestCase
      */
     public function testCreateSuccess(): void
     {
+        $nom                  = 'nom';
+        $prenom               = 'prenom';
+        $email                = 'foo@bar.com';
+        $password             = 'password';
+        $passwordConfirmation = 'password';
+        $roles                = 'ROLE_USER';
+        
         $this->client->request(
             'POST',
             '/create',
-            [],
-            [],
-            [],
-            json_encode([
-                'nom'                   => 'nom',
-                'prenom'                => 'prenom',
-                'societe'               => 'societe',
-                'email'                 => 'foo@bar',
-                'password'              => 'password',
-                'password_confirmation' => 'password0'
-            ])
+            [
+                'nom'                   => $nom,
+                'prenom'                => $prenom,
+                'email'                 => $email,
+                'password'              => $password,
+                'password_confirmation' => $passwordConfirmation
+            ]
         );
-        
-        dump(json_decode($this->client->getResponse()->getContent(), true));
 
         $this->assertResponseStatusCodeSame(200);
+        
+        $content = json_decode($this->client->getResponse()->getContent(), true);
+
+        $this->assertArrayHasKey('Utilisateur créé', $content);
+        $this->assertNotNull($content['Utilisateur créé']);
+        $this->assertSame($nom, $content['Utilisateur créé']['nom']);
+        $this->assertSame($prenom, $content['Utilisateur créé']['prenom']);
+        $this->assertSame($email, $content['Utilisateur créé']['email']);
+        $this->assertNotNull($content['Utilisateur créé']['roles']);
+        $this->assertSame($roles, $content['Utilisateur créé']['roles'][0]);
+    }
+
+    /**
+     * @return array
+     */
+    public function errors(): array
+    {
+        return [
+            ['',              'password', 'password',           'L\'adresse e-mail ne peut pas être vide.'                     ],
+            ['notValidEmail', 'password', 'password',           '"notValidEmail" ne semble pas être une adresse e-mail valide.'],
+            ['foo@bar.com',   '',         '',                   'Le mot de passe ne peut pas être vide.'                       ],
+            ['foo@bar.com',   'pass',     'pass',               'Le mot de passe doit comporter au moins 6 caractères.'        ],
+            ['foo@bar.com',   'password', 'notTheSamePassword', 'Les mots de passe ne sont pas identiques.'                    ]
+        ];
+    }
+
+    /**
+     * Tests create errors
+     * 
+     * @dataProvider errors
+     * 
+     * @param string|null $email
+     * @param string|null $password
+     * @param string|null $passwordConfirmation
+     * @param string      $error
+     * 
+     * @return void
+     */
+    public function testCreateErrors(?string $email, ?string $password, ?string $passwordConfirmation, string $error): void
+    {
+        $nom    = 'nom';
+        $prenom = 'prenom';
+        
+        $this->client->request(
+            'POST',
+            '/create',
+            [
+                'nom'                   => $nom,
+                'prenom'                => $prenom,
+                'email'                 => $email,
+                'password'              => $password,
+                'password_confirmation' => $passwordConfirmation
+            ]
+        );
+
+        $this->assertResponseStatusCodeSame(400);
+        
+        $content = json_decode($this->client->getResponse()->getContent(), true);
+
+        $this->assertArrayHasKey('Erreurs', $content);
+        $this->assertSame($error, $content['Erreurs'][0]);
     }
 
     /**
@@ -204,8 +266,8 @@ class UtilisateurControllerTest extends WebTestCase
     public function roles(): array
     {
         return [
-            [ ['ROLE_ADMIN'], 200, 0, 'Access authorized!' ],
-            [ ['ROLE_USER'] , 403, 1, 'Access Denied!'     ]
+            [ ['ROLE_USER'],  403 ],
+            [ ['ROLE_ADMIN'], 200 ]
         ];
     }
 
@@ -214,14 +276,12 @@ class UtilisateurControllerTest extends WebTestCase
      * 
      * @dataProvider roles
      * 
-     * @param array  $roles
-     * @param int    $httpCode
-     * @param int    $count
-     * @param string $error
+     * @param array $roles
+     * @param int   $httpCode
      * 
      * @return void
      */
-    public function testAdminAccess(array $roles, int $httpCode, int $count, string $error): void
+    public function testAdminAccess(array $roles, int $httpCode): void
     {
         $email    = '0@foo.bar';
         $password = 'password0';
@@ -249,12 +309,6 @@ class UtilisateurControllerTest extends WebTestCase
         );
 
         $this->assertResponseStatusCodeSame($httpCode);
-
-        $content = json_decode($this->client->getResponse()->getContent(), true);
-
-        //$this->assertArrayHasKey('error', $content);
-        //$this->assertCount($count, $content['error']);
-        //$this->assertSame($error, $content['error']);
     }
 
     /**
