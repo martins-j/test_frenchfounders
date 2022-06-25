@@ -7,13 +7,13 @@ namespace App\Controller;
 use App\Entity\Utilisateur;
 use App\Service\ValidationService;
 use Doctrine\ORM\EntityManagerInterface;
+use Nexy\Slack\Client;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * Class UtilisateurController.
@@ -29,8 +29,8 @@ class UtilisateurController extends AbstractController
     /** @var ValidationService $validator */
     private ValidationService $validator;
 
-    /** @var SendController $mailer */
-    private SendController $mailer;
+    /** @var SendController $send */
+    private SendController $send;
 
     /** @var HomeController $homeController */
     private HomeController $homeController;
@@ -41,32 +41,38 @@ class UtilisateurController extends AbstractController
      * @param EntityManagerInterface       $entityManager
      * @param UserPasswordEncoderInterface $passwordEncoder
      * @param ValidationService            $validator
-     * @param SendController               $mailer
+     * @param SendController               $send
      * @param HomeController               $homeController
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         UserPasswordEncoderInterface $passwordEncoder,
         ValidationService $validator,
-        SendController $mailer,
+        SendController $send,
         HomeController $homeController
     ) {
         $this->entityManager   = $entityManager;
         $this->passwordEncoder = $passwordEncoder;
         $this->validator       = $validator;
-        $this->mailer          = $mailer;
+        $this->send            = $send;
         $this->homeController  = $homeController;
     }
 
     /**
+     * Créer un nouvel utilisateur
+     * Une fois créé :
+     *  - un message e-mail est envoyé au nouvel utilisateur
+     *  - une notification est envoyée au groupe sur Slack
+     * 
      * @Route("/create", name="create", methods={"POST"})
      * 
      * @param Request         $request
      * @param MailerInterface $mailer
+     * @param Client          $slack
      * 
      * @return JsonResponse
      */
-    public function create(Request $request, MailerInterface $mailer): JsonResponse
+    public function create(Request $request, MailerInterface $mailer, Client $slack): JsonResponse
     {
         $parameters = $this->prepareParameters($request);
 
@@ -91,14 +97,14 @@ class UtilisateurController extends AbstractController
         $utilisateur->setPassword($passwordEncoded);
 
         if($this->validator->validate($utilisateur)) {
-            //$this->entityManager->persist($utilisateur);
-            //$this->entityManager->flush();
+            $this->entityManager->persist($utilisateur);
+            $this->entityManager->flush();
 
-            $this->mailer->sendEmail($mailer, [
-                'nom'    => $utilisateur->getNom(),
-                'prenom' => $utilisateur->getPrenom(),
-                'mail'   => $utilisateur->getEmail()
-            ]);
+            # Sending email
+            $this->send->sendEmail($mailer, $utilisateur);
+
+            # Sending slack notification
+            $this->send->sendSlackNotification($slack, $utilisateur);
 
             return $this->json([
                 'Utilisateur créé' => $utilisateur
@@ -121,6 +127,8 @@ class UtilisateurController extends AbstractController
     }
 
     /**
+     * Prépare les données saisis pour la création de l'utilisateur
+     * 
      * @param Request $request
      * 
      * @return array
@@ -138,6 +146,8 @@ class UtilisateurController extends AbstractController
     }
 
     /**
+     * Liste des erreurs lors de la céation de l'utilisateur
+     * 
      * @param array $parameters
      * 
      * @return array
@@ -162,11 +172,13 @@ class UtilisateurController extends AbstractController
     }
 
     /**
-     * @Route("/connecte", name="connecte", methods={"GET"})
+     * Donne les informations de l'utilisateur connecté
+     * 
+     * @Route("/connected", name="connecte", methods={"GET"})
      * 
      * @return JsonResponse
      */
-    public function connecte(): JsonResponse
+    public function connected(): JsonResponse
     {
         $this->homeController->login();
         
