@@ -16,6 +16,8 @@ use Symfony\Component\Routing\Annotation\Route;
 class HomeController extends AbstractController
 {
     /**
+     * Page d'accueil
+     * 
      * @Route("/", name="home")
      * 
      * @return Response
@@ -28,14 +30,17 @@ class HomeController extends AbstractController
     }
 
     /**
-     * @Route("/login", name="login", methods={"POST"})
+     * Login
      * 
+     * @Route("/login", name="login", methods={"POST"})
      */
     public function login()
     {
     }
 
     /**
+     * Logout
+     * 
      * @Route("/logout", name="logout", methods={"POST"})
      */
     public function logout()
@@ -43,12 +48,14 @@ class HomeController extends AbstractController
     }
 
     /**
-    * @Route("/admin", name="admin", methods={"POST"})
-    *
-    * @IsGranted("ROLE_ADMIN")
-    *
-    * @return JsonResponse
-    */
+     * Accès au contenu réservé à l'administrateur
+     *      
+     * @Route("/admin", name="admin", methods={"POST"})
+     *
+     * @IsGranted("ROLE_ADMIN")
+     *
+     * @return JsonResponse
+     */
     public function admin(): JsonResponse
     {
         return $this->json([

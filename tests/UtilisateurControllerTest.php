@@ -1,33 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests;
 
 use App\Entity\Utilisateur;
-use App\Repository\UtilisateurRepository;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityManagerInterface;
-use PHPUnit\Framework\MockObject\MockObject;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
- * Class UtilisateurControllerTest
+ * Class UtilisateurControllerTest.
  */
-class UtilisateurControllerTest extends WebTestCase
+class UtilisateurControllerTest extends ApiTestCase
 {
-    /** @var KernelBrowser $client */
-    private $client;
-
-    /** @var EntityManagerInterface|EntityManager $entityManager */
-    private $entityManager;
-
-    /** @var UtilisateurRepository|MockObject $utilisateurRepository */
-    private $utilisateurRepository;
-
     /**
-     * Tests create success
+     * Teste création de nouvel utilisateur
      * 
      * @return void
      */
@@ -35,7 +20,7 @@ class UtilisateurControllerTest extends WebTestCase
     {
         $nom                  = 'nom';
         $prenom               = 'prenom';
-        $email                = 'foo@bar.com';
+        $email                = 'test@foo.bar';
         $password             = 'password';
         $passwordConfirmation = 'password';
         $roles                = 'ROLE_USER';
@@ -66,6 +51,8 @@ class UtilisateurControllerTest extends WebTestCase
     }
 
     /**
+     * Data pour le teste des erreurs lors de la création de nouvel utilisateur
+     * 
      * @return array
      */
     public function errors(): array
@@ -80,7 +67,7 @@ class UtilisateurControllerTest extends WebTestCase
     }
 
     /**
-     * Tests create errors
+     * Teste les erreurs
      * 
      * @dataProvider errors
      * 
@@ -117,6 +104,8 @@ class UtilisateurControllerTest extends WebTestCase
     }
 
     /**
+     * Data pour le teste de login
+     * 
      * @return array
      */
     public function utilisateurs(): array
@@ -161,7 +150,7 @@ class UtilisateurControllerTest extends WebTestCase
     }
 
     /**
-     * Tests logout
+     * Teste logout
      * 
      * @return void
      */
@@ -176,7 +165,7 @@ class UtilisateurControllerTest extends WebTestCase
     }
 
     /**
-     * Tests get utilisateur connecte
+     * Teste la requête des informations de l'utilisateur connecté
      * 
      * @return void
      */
@@ -202,7 +191,7 @@ class UtilisateurControllerTest extends WebTestCase
 
         $this->client->request(
             'GET',
-            '/connecte'
+            '/connected'
         );
 
         $this->assertResponseStatusCodeSame(200);
@@ -217,7 +206,7 @@ class UtilisateurControllerTest extends WebTestCase
     }
 
     /** 
-     * Tests aucun utilisateur connecte
+     * Teste si aucun utilisateur est connecté
      * 
      * @return void
      */
@@ -247,7 +236,7 @@ class UtilisateurControllerTest extends WebTestCase
 
         $this->client->request(
             'GET',
-            '/connecte'
+            '/connected'
         );
 
         $this->assertResponseStatusCodeSame(200);
@@ -259,7 +248,7 @@ class UtilisateurControllerTest extends WebTestCase
     }
 
     /**
-     * Roles
+     * Roles pour tester l'accès au contenu administrateur
      * 
      * return array
      */
@@ -272,7 +261,7 @@ class UtilisateurControllerTest extends WebTestCase
     }
 
     /** 
-     * Tests access to admin
+     * Teste l'accès au contenu admin/
      * 
      * @dataProvider roles
      * 
@@ -309,30 +298,5 @@ class UtilisateurControllerTest extends WebTestCase
         );
 
         $this->assertResponseStatusCodeSame($httpCode);
-    }
-
-    /**
-     * @return void
-     */
-    protected function setUp(): void
-    {
-        $this->client = static::createClient();
-
-        $kernel = self::bootKernel();
-
-        $this->entityManager = $kernel
-            ->getContainer()
-            ->get('doctrine')
-            ->getManager()
-        ;
-    }
-
-    /**
-     * @return void
-     */
-    protected function tearDown(): void
-    {
-        $this->entityManager->close();
-        $this->entityManager = null;
     }
 }
