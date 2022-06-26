@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Entity\Utilisateur;
 use App\Service\ValidationService;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Nexy\Slack\Client;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -100,14 +101,27 @@ class UtilisateurController extends AbstractController
             $this->entityManager->persist($utilisateur);
             $this->entityManager->flush();
 
-            # Sending email
-            $this->send->sendEmail($mailer, $utilisateur);
+            $notifications = [];
 
+            # Sending email
+            try {
+                $this->send->sendEmail($mailer, $utilisateur);
+                $notifications[] = "Email envoyé à l'utilisateur.";    
+            } catch (Exception $e) {
+                $notifications[] = "Email non envoyé à l'utilisateur.";
+            }
+            
             # Sending slack notification
-            $this->send->sendSlackNotification($slack, $utilisateur);
+            try {
+                $this->send->sendSlackNotification($slack, $utilisateur);
+                $notifications[] = "Notification envoyé sur Slack.";    
+            } catch (Exception $e) {
+                $notifications[] = "Notification non envoyé sur Slack.";
+            }
 
             return $this->json([
-                'Utilisateur créé' => $utilisateur
+                'Utilisateur créé' => $utilisateur,
+                'Notifications'    => $notifications
             ],
             200,
             [],
