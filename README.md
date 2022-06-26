@@ -1,31 +1,51 @@
 # test_frenchfounders
 
+## Installation avec docker
+
+Pour démarrer l'API avec Docker, exécutez :
+
+`docker-compose build`
+
+puis lancez :
+
+`docker-compose up -d`
+
+Le site est alors up et accessible via l'adresse locale :
+
+http://localhost:80
+
 ## Base de données
 
-Le fichier AppFixtures.php sur le répertoire src/DataFixtures permet d'insérer de fausses données en base de données. Dans un premier temps, exécutez la commande suivante :
+Dans un premier temps, créez le schéma de la base de données :
 
-`php bin/console doctrine:fixtures:load`
+`docker-compose exec php php bin/console doctrine:schema:create`
 
----
+Le fichier AppFixtures.php sur le répertoire src/DataFixtures permet d'insérer de fausses données en base de données. Pour cela, exécutez la commande suivante :
 
-## Tester l'envoie d'e-mails avec MailDev
+`docker-compose exec php php bin/console doctrine:fixtures:load`
 
-MailDev fonctionne avec NodeJS. Si vous ne l'avez pas déjà fait, vous devez commencer par installer NodeJS sur votre machine et ainsi avoir la commande npm de disponible.
-Puis installez MailDev (utilisez `sudo` si nécessaire) :
+La base de données peut être suivie et gérée en utilisant l'applicatif `phpMyAmdin` sur le port 8080 :
 
-`npm install -g maildev`
+http://localhost:8080/
 
-Une fois installé, ne reste plus qu’à le lancer :
+avec les champs de connexion suivants :
 
-`maildev --hide-extensions STARTTLS`
-
-L'interface est accesible sur le port 1080 :
-
-http://127.0.0.1:1080/
+- Serveur : `mysql`
+- Utilisateur : `root`
 
 ---
 
-## Tester l'envoie de notifications Slack
+## Envoie d'e-mails avec MailDev
+
+MailDev permet de lancer un serveur SMTP qui va intercepter tous les emails. Il propose une interface web qui permettra de voir les mails capturés.
+
+L'interface web pour voir les mails capturés est accesible sur le port 1080 :
+
+http://localhost:1080/
+
+---
+
+## Envoie de notifications Slack
 
 Un URL du Webhook entrant pour publier les messages dans Slack a été saisie sur la variable d'environnement :
 
@@ -39,7 +59,7 @@ Pour tester vous même, changez cette variable par l'URL Webhook d'accès à un 
 
 Pour lancer les tests unitaires, exécutez :
 
-`php vendor/bin/phpunit tests`
+`docker-compose exec php php vendor/bin/phpunit tests`
 
 ---
 
