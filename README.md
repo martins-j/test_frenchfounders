@@ -67,3 +67,10 @@ Pour optimiser/changer les nombreux appels, je donne deux exemples :
 
 ## Que faudrait-il faire pour sécuriser au maximum cette api ?
 
+Pour augmenter la sécurité d’un API, nous pouvons utiliser :
+
+- un jeton (token) JWT, c’est-à-dire, une chaîne de caractères que l’on va envoyer à chaque requête que l’on souhaite effectuer auprès d’une API afin de s’authentifier. Ce jeton contient toutes les informations nécessaires à l’identification.
+
+- une classe Voter du composant Security pour implémenter des règles spécifiques de décision si une action sur un objet est autorisée.
+
+- OAuth2 pour donner un accès à une application tierce et sans avoir besoin d’y stocker en clair les identifiants de l’utilisateur. Son utilisation permet de mettre en place une délégation d’authentification et d’autorisation de l’utilisateur sous la forme d’un jeton pour accorder à une application tierce un accès limité sur une ressource protégées où elle est stockée.
