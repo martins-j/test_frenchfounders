@@ -1,5 +1,16 @@
 # test_frenchfounders
 
+## Préparation de Docker
+
+Avant de commencer, vérifiez que Docker n’est pas configuré pour exécuter des conteneurs Linux.
+
+Pour basculer vers les conteneurs Windows dans Docker cliquez avec le bouton droit sur l’icône Docker, puis sélectionnez "Basculer vers les conteneurs Windows" (ou "Switch to Windows containers")
+
+Pour basculer entre les conteneurs en utilisant la ligne de commande, exécutez :
+
+- avec PowerShell : `& $Env:ProgramFiles\Docker\Docker\DockerCli.exe -SwitchDaemon`
+- ou avec l'invite de commandes : `C:\Program Files\Docker\Docker\DockerCli.exe" -SwitchDaemon`
+
 ## Installation avec docker
 
 Pour démarrer l'API avec Docker, exécutez :
@@ -47,9 +58,9 @@ http://localhost:1080/
 
 ## Envoie de notifications Slack
 
-Un URL du Webhook entrant pour publier les messages dans Slack a été saisie sur la variable d'environnement :
+Un URL du Webhook entrant pour publier les messages dans Slack a été saisie sur `docker-composer.yaml` la variable :
 
-`SLACK_WEBHOOK_ENDPOINT=`
+`SLACK_WEBHOOK_ENDPOINT:`
 
 Pour tester vous même, changez cette variable par l'URL Webhook d'accès à un espace de travail Slack où vous êtes administrateur.
 
